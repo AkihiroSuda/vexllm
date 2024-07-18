@@ -21,7 +21,7 @@ export OPENAI_API_KEY=...
 trivy image python:3.12.4 --format=json --severity HIGH,CRITICAL >python.json
 
 # Generate .trivyignore using VexLLM
-vexllm generate python.json .trivyignore
+vexllm generate python.json .trivyignore \
   --hint-not-server \
   --hint-compromise-on-availability \
   --hint-used-commands=python3 \
