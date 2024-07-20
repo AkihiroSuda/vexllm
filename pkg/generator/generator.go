@@ -162,7 +162,7 @@ You judge whether a vulnerability is likely negligble under the specified hints.
 The input is similar to [Trivy](https://github.com/aquasecurity/trivy)'s JSON, but not exactly same.
 
 ### Output format
-If you find neglible vulnerabilities, print a JSON map formatted and indented as follows:
+If you find negligible vulnerabilities, print a JSON map formatted and indented as follows:
 `
 	systemPrompt += "```json\n" + llmOutputExample + "\n```"
 	systemPrompt += "* `confidence` (0.0-1.0): higher value if you are confident with the answer.\n"
