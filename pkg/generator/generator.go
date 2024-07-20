@@ -168,6 +168,7 @@ If you find negligible vulnerabilities, print a JSON map formatted and indented 
 	systemPrompt += "* `confidence` (0.0-1.0): higher value if you are confident with the answer.\n"
 	systemPrompt += "* `reason`: the reason why you think the vulnerability is negligible. Should be unique, descriptive, and in 2 or 3 sentences.\n"
 	systemPrompt += "Do not include non-negligible vulnerabilities in the result.\n"
+	systemPrompt += "Only print a valid JSON.\n"
 
 	vulnsMap := make(map[string]Vulnerability)
 	for _, f := range vulns {
