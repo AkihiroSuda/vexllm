@@ -77,16 +77,19 @@ Other properties are duplicated from the original input.
 
 ## Configuration
 ### LLM backends
-VexLLM is tested with OpenAI GPT-3.5 Turbo.
+VexLLM is tested with OpenAI GPT-3.5 Turbo and Anthropic Claude 3.5 Sonnet.
 
 The following env vars are recognized:
-- `OPENAI_API_KEY` (necessary)
-- `OPENAI_MODEL`
-- `OPENAI_BASE_URL`
-- `OPENAI_API_BASE`
-- `OPENAI_ORGANIZATION`
+- OpenAI
+  - `OPENAI_API_KEY` (necessary)
+  - `OPENAI_MODEL`
+  - `OPENAI_BASE_URL`
+  - `OPENAI_API_BASE`
+  - `OPENAI_ORGANIZATION`
+- Anthropic
+  - `ANTHROPIC_API_KEY` (necessary)
 
-VexLLM may also work with Google AI, Anthropic, and Ollama, but these backends are not tested.
+VexLLM may also work with Google AI, and Ollama, but these backends are not tested.
 See [`pkg/llm/...`](./pkg/llm/).
 
 ## Command reference
