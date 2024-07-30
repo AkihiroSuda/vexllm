@@ -11,7 +11,7 @@ import (
 	"github.com/AkihiroSuda/vexllm/pkg/llm"
 	"github.com/AkihiroSuda/vexllm/pkg/llm/llmfactory" // FIXME: dependency monster
 	"github.com/AkihiroSuda/vexllm/pkg/outputhandler"
-	trivytypes "github.com/aquasecurity/trivy/pkg/types" // FIXME: dependency monster
+	"github.com/AkihiroSuda/vexllm/pkg/trivytypes"
 	"github.com/spf13/cobra"
 )
 
