@@ -18,9 +18,9 @@ jobs:
     # The maximum access is "read" for PRs from public forked repos
     # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
     permissions:
-      id-token: write
-      contents: read
-      attestations: write
+      contents: write  # for releases
+      id-token: write  # for provenances
+      attestations: write  # for provenances
     steps:
       - uses: actions/checkout@v4
         with:
