@@ -51,6 +51,7 @@ func New() *cobra.Command {
 	flags.StringSlice("hint-unused-commands", nil, "Hint: list of unused shell commands")
 	flags.Bool("hint-compromise-on-availability", false,
 		"Hint: focus on Confidentiality and Integrity rather than on Availability")
+	flags.String("debug-dir", "", "Directory to dump debug info")
 	return cmd
 }
 
@@ -153,6 +154,10 @@ func action(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	o.Hints.CompromiseOnAvailability, err = flags.GetBool("hint-compromise-on-availability")
+	if err != nil {
+		return err
+	}
+	o.DebugDir, err = flags.GetString("debug-dir")
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/AkihiroSuda/vexllm/pkg/llm"
@@ -30,6 +31,8 @@ type Opts struct {
 	RetryOnRateLimit int
 
 	Hints Hints
+
+	DebugDir string
 }
 
 type Hints struct {
@@ -59,6 +62,12 @@ func New(o Opts) (*Generator, error) {
 	}
 	if g.o.RetryOnRateLimit == 0 {
 		g.o.RetryOnRateLimit = DefaultRetryOnRateLimit
+	}
+	if g.o.DebugDir != "" {
+		if err := os.MkdirAll(g.o.DebugDir, 0755); err != nil {
+			slog.Error("failed to create the debug dir", "error", err)
+			g.o.DebugDir = ""
+		}
 	}
 	return g, nil
 }
@@ -183,6 +192,15 @@ If you find negligible vulnerabilities, print a JSON map formatted and indented 
 	msgs := []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeSystem, systemPrompt),
 		llms.TextParts(llms.ChatMessageTypeHuman, humanPrompt),
+	}
+
+	if g.o.DebugDir != "" {
+		if err := os.WriteFile(filepath.Join(g.o.DebugDir, "system.prompt"), []byte(systemPrompt), 0644); err != nil {
+			slog.ErrorContext(ctx, "failed to write system.prompt", "error", err)
+		}
+		if err := os.WriteFile(filepath.Join(g.o.DebugDir, "human.prompt"), []byte(humanPrompt), 0644); err != nil {
+			slog.ErrorContext(ctx, "failed to write human.prompt", "error", err)
+		}
 	}
 
 	if _, err = g.o.LLM.GenerateContent(ctx, msgs, callOpts...); err != nil {
