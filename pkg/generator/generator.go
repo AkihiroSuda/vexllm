@@ -173,7 +173,7 @@ The input is similar to [Trivy](https://github.com/aquasecurity/trivy)'s JSON, b
 ### Output format
 If you find negligible vulnerabilities, print a JSON map formatted and indented as follows:
 `
-	systemPrompt += "```json\n" + llmOutputExample + "\n```"
+	systemPrompt += "```json\n" + llmOutputExample + "\n```\n"
 	systemPrompt += "* `confidence` (0.0-1.0): higher value if you are confident with the answer.\n"
 	systemPrompt += "* `reason`: the reason why you think the vulnerability is negligible. Should be unique, descriptive, and in 2 or 3 sentences.\n"
 	systemPrompt += "Do not include non-negligible vulnerabilities in the result.\n"
