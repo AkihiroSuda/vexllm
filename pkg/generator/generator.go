@@ -139,8 +139,8 @@ func (g *Generator) generateStatements(ctx context.Context, vulns []Vulnerabilit
 		llms.WithStreamingFunc(streamingFunc),
 	}
 
-	systemPrompt := `You are a security expert talented for triaging vulnerabity reports.
-You judge whether a vulnerability is likely negligble under the specified hints.
+	systemPrompt := `You are a security expert talented for triaging vulnerability reports.
+You judge whether a vulnerability is likely negligible under the specified hints.
 
 ### Hints
 `
