@@ -11,30 +11,37 @@ import (
 	"github.com/AkihiroSuda/vexllm/pkg/llm"
 	"github.com/AkihiroSuda/vexllm/pkg/llm/llmfactory" // FIXME: dependency monster
 	"github.com/AkihiroSuda/vexllm/pkg/outputhandler"
+	"github.com/AkihiroSuda/vexllm/pkg/trivypluginutil"
 	"github.com/AkihiroSuda/vexllm/pkg/trivytypes"
 	"github.com/spf13/cobra"
 )
 
-const Example = `  # Basic usage
+func Example() string {
+	exe := "vexllm"
+	if trivypluginutil.IsTrivyPluginMode() {
+		exe = "trivy " + exe
+	}
+	return fmt.Sprintf(`  # Basic usage
   export OPENAI_API_KEY=...
 
   trivy image python:3.12.4 --format=json --severity HIGH,CRITICAL >python.json
 
-  vexllm generate python.json .trivyignore \
+  %s generate python.json .trivyignore \
     --hint-not-server \
     --hint-compromise-on-availability \
     --hint-used-commands=python3 \
     --hint-unused-commands=git,wget,curl,apt,apt-get
 
   trivy convert --format=table python.json
-`
+`, exe)
+}
 
 func New() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "generate INPUT OUTPUT",
 		Short:                 "Generate VEX using LLM",
 		Long:                  "Generate Vulnerability-Exploitability eXchange (VEX) information using LLM, so as to silence negligible CVE alerts that are produced by Trivy.",
-		Example:               Example,
+		Example:               Example(),
 		Args:                  cobra.ExactArgs(2),
 		RunE:                  action,
 		DisableFlagsInUseLine: true,

@@ -25,7 +25,7 @@ func newRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "vexllm",
 		Short:         "Silence negligible CVE alerts",
-		Example:       generate.Example,
+		Example:       generate.Example(),
 		Version:       version.GetVersion(),
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
