@@ -1,6 +1,6 @@
 # Trivy plugin manifest <https://aquasecurity.github.io/trivy/v0.56/docs/plugin/developer-guide/>
 name: "vexllm"
-version: "0.1.0-beta.0"
+version: "0.1.0"
 repository: github.com/AkihiroSuda/vexllm
 maintainer: AkihiroSuda
 # TODO: support output mode
@@ -11,20 +11,20 @@ platforms:
   - selector:
       os: darwin
       arch: amd64
-    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0-beta.0/vexllm-v0.1.0-beta.0.darwin-amd64.tar.gz
+    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0/vexllm-v0.1.0.darwin-amd64.tar.gz
     bin: ./vexllm
   - selector:
       os: darwin
       arch: arm64
-    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0-beta.0/vexllm-v0.1.0-beta.0.darwin-arm64.tar.gz
+    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0/vexllm-v0.1.0.darwin-arm64.tar.gz
     bin: ./vexllm
   - selector:
       os: linux
       arch: amd64
-    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0-beta.0/vexllm-v0.1.0-beta.0.linux-amd64.tar.gz
+    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0/vexllm-v0.1.0.linux-amd64.tar.gz
     bin: ./vexllm
   - selector:
       os: linux
       arch: arm64
-    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0-beta.0/vexllm-v0.1.0-beta.0.linux-arm64.tar.gz
+    uri: https://github.com/AkihiroSuda/vexllm/releases/download/v0.1.0/vexllm-v0.1.0.linux-arm64.tar.gz
     bin: ./vexllm
