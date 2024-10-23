@@ -8,14 +8,24 @@ The following output formats are supported:
 - [OpenVEX](https://github.com/openvex)
 
 ## Installation
+Option 1: As a standalone program:
 ```bash
 go install github.com/AkihiroSuda/vexllm/cmd/vexllm@latest
+```
+
+Option 2: As a Trivy [plugin](https://aquasecurity.github.io/trivy/latest/docs/plugin/):
+```bash
+trivy plugin install github.com/AkihiroSuda/vexllm
+alias vexllm="trivy vexllm"
 ```
 
 ## Example
 ```bash
 # Set OpenAI API key
 export OPENAI_API_KEY=...
+
+# Specify OpenAI model
+export OPENAI_MODEL=gpt-4o-mini
 
 # Generate a report using Trivy
 trivy image python:3.12.4 --format=json --severity HIGH,CRITICAL >python.json
@@ -77,12 +87,12 @@ Other properties are duplicated from the original input.
 
 ## Configuration
 ### LLM backends
-VexLLM is tested with OpenAI GPT-3.5 Turbo and Anthropic Claude 3.5 Sonnet.
+VexLLM is tested with OpenAI GPT-4o mini and Anthropic Claude 3.5 Sonnet.
 
 The following env vars are recognized:
 - OpenAI
   - `OPENAI_API_KEY` (necessary)
-  - `OPENAI_MODEL`
+  - `OPENAI_MODEL`, e.g., `gpt-3.5-turbo` (default), `gpt-4o-mini` (recommended)
   - `OPENAI_BASE_URL`
   - `OPENAI_API_BASE`
   - `OPENAI_ORGANIZATION`
@@ -103,6 +113,7 @@ Usage:
 Examples:
   # Basic usage
   export OPENAI_API_KEY=...
+  export OPENAI_MODEL=gpt-4o-mini
 
   trivy image python:3.12.4 --format=json --severity HIGH,CRITICAL >python.json
 
