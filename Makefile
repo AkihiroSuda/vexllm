@@ -38,14 +38,23 @@ uninstall:
 clean:
 	rm -rf _output _artifacts
 
+define make_artifact
+	rm -rf _output
+	GOOS=$(1) GOARCH=$(2) make binaries
+	(cd _output/bin; tar --sort=name --mtime="@${SOURCE_DATE_EPOCH}" \
+		--owner=0 --group=0 --numeric-owner \
+		--pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
+		-czvf ../../_artifacts/vexllm-$(VERSION).$(1)-$(2).tar.gz .)
+endef
+
 .PHONY: artifacts
 artifacts:
 	rm -rf _artifacts
 	mkdir -p _artifacts
-	GOOS=linux  GOARCH=amd64            $(GO_BUILD) -o _artifacts/vexllm-$(VERSION).linux-amd64   ./cmd/vexllm
-	GOOS=linux  GOARCH=arm64            $(GO_BUILD) -o _artifacts/vexllm-$(VERSION).linux-arm64   ./cmd/vexllm
-	GOOS=darwin GOARCH=amd64            $(GO_BUILD) -o _artifacts/vexllm-$(VERSION).darwin-amd64  ./cmd/vexllm
-	GOOS=darwin GOARCH=arm64            $(GO_BUILD) -o _artifacts/vexllm-$(VERSION).darwin-arm64  ./cmd/vexllm
+	$(call make_artifact,linux,amd64)
+	$(call make_artifact,linux,arm64)
+	$(call make_artifact,darwin,amd64)
+	$(call make_artifact,darwin,arm64)
 	(cd _artifacts ; sha256sum *) > SHA256SUMS
 	mv SHA256SUMS _artifacts/SHA256SUMS
 	touch -d @$(SOURCE_DATE_EPOCH) _artifacts/*
