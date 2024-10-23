@@ -23,6 +23,7 @@ func Example() string {
 	}
 	return fmt.Sprintf(`  # Basic usage
   export OPENAI_API_KEY=...
+  export OPENAI_MODEL=gpt-4o-mini
 
   trivy image python:3.12.4 --format=json --severity HIGH,CRITICAL >python.json
 
