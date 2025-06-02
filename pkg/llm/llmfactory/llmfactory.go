@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/AkihiroSuda/vexllm/pkg/llm"
 	"github.com/tmc/langchaingo/llms"
@@ -26,7 +27,9 @@ func New(ctx context.Context, name string) (llms.Model, error) {
 	case llm.OpenAI:
 		return openai.New()
 	case llm.Ollama:
-		return ollama.New()
+		var ollamaModel string
+		ollamaModel = os.Getenv("OLLAMA_MODEL")
+		return ollama.New(ollama.WithModel(ollamaModel))
 	case llm.Anthropic:
 		return anthropic.New()
 	case llm.GoogleAI:

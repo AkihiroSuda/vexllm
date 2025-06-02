@@ -98,6 +98,8 @@ The following env vars are recognized:
   - `OPENAI_ORGANIZATION`
 - Anthropic
   - `ANTHROPIC_API_KEY` (necessary)
+- Ollama
+  - `OLLAMA_MODEL`, e.g., `qwen3:8b`, `gemma3:4b`
 
 VexLLM may also work with Google AI, and Ollama, but these backends are not tested.
 See [`pkg/llm/...`](./pkg/llm/).
