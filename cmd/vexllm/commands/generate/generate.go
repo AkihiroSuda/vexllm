@@ -97,7 +97,7 @@ func action(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer outputW.Close()
+	defer outputW.Close() //nolint:errcheck
 	outputFormat, err := flags.GetString("output-format")
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func action(cmd *cobra.Command, args []string) error {
 	default:
 		return fmt.Errorf("unknown output format %q", outputFormat)
 	}
-	defer h.Close()
+	defer h.Close() //nolint:errcheck
 
 	var o generator.Opts
 	llmName, err := flags.GetString("llm")
