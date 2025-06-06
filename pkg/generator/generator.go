@@ -13,6 +13,7 @@ import (
 
 	"github.com/AkihiroSuda/vexllm/pkg/llm"
 	"github.com/openvex/go-vex/pkg/vex"
+	"github.com/tmc/langchaingo/jsonschema"
 	"github.com/tmc/langchaingo/llms"
 )
 
@@ -84,16 +85,20 @@ type Vulnerability struct {
 }
 
 type llmOutput struct {
+	Result []llmOutputEntry `json:"result"`
+}
+
+type llmOutputEntry struct {
+	VulnID     string  `json:"vulnId"`
 	Confidence float64 `json:"confidence"` // 0.0-1.0
 	Reason     string  `json:"reason"`
 }
 
 const llmOutputExample = `
-{
-	"CVE-2042-12345": {"confidence": 0.4, "reason": "This DDOS vulnerability is only exploitable in public server programs."},
-	"CVE-2042-23456": {"confidence": 0.8, "reason": "The vulnerable package \"foo\" is unlikely used."}
-}
-`
+{"result": [
+	{"vulnId": "CVE-2042-12345", "confidence": 0.4, "reason": "Negligible because this DDOS vulnerability is only exploitable in public server programs."},
+	{"vulnId": "CVE-2043-23456", "confidence": 0.8, "reason": "Negligible because the vulnerable package \"foo\" is unlikely used."}
+]}`
 
 func retryOnRateLimit(ctx context.Context, interval time.Duration, maxRetry int, fn func(context.Context) error) error {
 	var err error
@@ -176,13 +181,53 @@ You judge whether a vulnerability is likely negligible under the specified hints
 The input is similar to [Trivy](https://github.com/aquasecurity/trivy)'s JSON, but not exactly same.
 
 ### Output format
-If you find negligible vulnerabilities, print a JSON map formatted and indented as follows:
+If you find negligible vulnerabilities, print a JSON object that follows the specified JSON schema.
 `
+	systemPrompt += "The result must only contain negligible vulnerabilities.\n"
+	systemPrompt += "If you think that the vulnerability is actually exploitable in the context, do NOT add it to the result.\n"
+	systemPrompt += "Only print a valid JSON object.\n"
+
+	schema := &jsonschema.Definition{
+		Type: jsonschema.Object, // openai wants the top-level type to be Object, not Array
+		Properties: map[string]jsonschema.Definition{
+			"result": {
+				Type: jsonschema.Array,
+				Items: &jsonschema.Definition{
+					Type: jsonschema.Object,
+					Properties: map[string]jsonschema.Definition{
+						"vulnId": {
+							Type:        jsonschema.String,
+							Description: "The **vulnerability ID** of which you think negligible. Must corresponds to the vulnID in the input JSON.",
+						},
+						"confidence": {
+							Type:        jsonschema.Number,
+							Description: "A float number (0.0-1.0). Higher value indicates higher **confidence** with the answer. Should not be 0.0.",
+						},
+						"reason": {
+							Type: jsonschema.String,
+							Description: "The **reason** why you think the vulnerability is negligible in this container image. " +
+								"The reason string should be unique, descriptive, and in 2 or 3 sentences. " +
+								"Do not just duplicate the description of the vulnerability here.",
+						},
+					},
+					Required: []string{"vulnId", "confidence", "reason"},
+				},
+			},
+		},
+		Required: []string{"result"},
+	}
+	schemaJ, err := schema.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	systemPrompt += "#### Output format: JSON Schema\n"
+	systemPrompt += string(schemaJ) + "\n"
+	systemPrompt += "#### Output format: Example\n"
 	systemPrompt += "```json\n" + llmOutputExample + "\n```\n"
-	systemPrompt += "* `confidence` (0.0-1.0): higher value if you are confident with the answer.\n"
-	systemPrompt += "* `reason`: the reason why you think the vulnerability is negligible. Should be unique, descriptive, and in 2 or 3 sentences.\n"
-	systemPrompt += "Do not include non-negligible vulnerabilities in the result.\n"
-	systemPrompt += "Only print a valid JSON.\n"
+
+	// Only ollama and openai supports WithJSONSchema
+	// https://github.com/tmc/langchaingo/pull/1302
+	callOpts = append(callOpts, llms.WithJSONSchema(schema))
 
 	vulnsMap := make(map[string]Vulnerability)
 	for _, f := range vulns {
@@ -212,13 +257,14 @@ If you find negligible vulnerabilities, print a JSON map formatted and indented 
 		return err
 	}
 
-	var m map[string]llmOutput
-	if err = json.Unmarshal(b.Bytes(), &m); err != nil {
+	var l llmOutput
+	if err = json.Unmarshal(b.Bytes(), &l); err != nil {
 		return fmt.Errorf("unparsable JSON output from LLM: %w: %q", err, b.String())
 	}
 
 	var stmts []vex.Statement
-	for k, v := range m {
+	for _, v := range l.Result {
+		k := v.VulnID
 		vv, err := json.Marshal(v)
 		if err != nil {
 			return err
