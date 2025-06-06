@@ -89,15 +89,18 @@ type llmOutput struct {
 }
 
 type llmOutputEntry struct {
-	VulnID     string  `json:"vulnId"`
-	Confidence float64 `json:"confidence"` // 0.0-1.0
-	Reason     string  `json:"reason"`
+	VulnID      string  `json:"vulnId"`
+	Exploitable bool    `json:"exploitable"`
+	Confidence  float64 `json:"confidence"` // 0.0-1.0
+	Reason      string  `json:"reason"`
 }
 
 const llmOutputExample = `
 {"result": [
-	{"vulnId": "CVE-2042-12345", "confidence": 0.4, "reason": "Negligible because this DDOS vulnerability is only exploitable in public server programs."},
-	{"vulnId": "CVE-2043-23456", "confidence": 0.8, "reason": "Negligible because the vulnerable package \"foo\" is unlikely used."}
+	{"vulnId": "CVE-2042-12345", "exploitable": false, "confidence": 0.4, "reason": "This vulnerability is negligible because this DDOS vulnerability is only exploitable in public server programs."},
+	{"vulnId": "CVE-2043-23456", "exploitable": false, "confidence": 0.8, "reason": "This vulnerability is negligible because the vulnerable package \"foo\" is unlikely used."}
+	{"vulnId": "CVE-2043-34567", "exploitable": false, "confidence": 0.9, "reason": "This vulnerability is exploitable because the affected command is explicitly marked as used."}
+	{"vulnId": "CVE-2043-45678", "exploitable": false, "confidence": 1.0, "reason": "This vulnerability is negligible because the actual kernel version differs in the case of containers."}
 ]}`
 
 func retryOnRateLimit(ctx context.Context, interval time.Duration, maxRetry int, fn func(context.Context) error) error {
@@ -158,17 +161,17 @@ You judge whether a vulnerability is likely negligible under the specified hints
 		systemPrompt += "* " + f + "\n"
 	}
 	if g.o.Hints.Container {
-		systemPrompt += "* The artifact is a container image. So, kernel-related vulnerabilities are safely negligible.\n"
+		systemPrompt += "* The artifact is a container image. So, kernel-related vulnerabilities can be safely concluded as \"NOT exploitable\".\n"
 	}
 	if g.o.Hints.NotServer {
-		systemPrompt += "* The artifact is not used as a network server program. So, server-specific vulnerabilities are safely negligible.\n"
+		systemPrompt += "* The artifact is not used as a network server program. So, server-specific vulnerabilities can be safely concluded as \"NOT exploitable\".\n"
 	}
 	if len(g.o.Hints.UsedCommands) > 0 {
 		systemPrompt += fmt.Sprintf("* The following shell commands are known to be used: %v\n",
 			g.o.Hints.UsedCommands)
 	}
 	if len(g.o.Hints.UnusedCommands) > 0 {
-		systemPrompt += fmt.Sprintf("* The following shell commands are known to be unused and their vulnerabilities are negligible, although these commands might be still present in the artifact: %v\n",
+		systemPrompt += fmt.Sprintf("* The following shell commands are known to be unused and their vulnerabilities can be safely concluded as \"NOT exploitable\", although these commands might be still present in the artifact: %v\n",
 			g.o.Hints.UnusedCommands)
 	}
 	if g.o.Hints.CompromiseOnAvailability {
@@ -181,11 +184,9 @@ You judge whether a vulnerability is likely negligible under the specified hints
 The input is similar to [Trivy](https://github.com/aquasecurity/trivy)'s JSON, but not exactly same.
 
 ### Output format
-If you find negligible vulnerabilities, print a JSON object that follows the specified JSON schema.
+For each of the input vulnerabilities, print a JSON object that follows the specified JSON schema.
+Only print a valid JSON object.
 `
-	systemPrompt += "The result must only contain negligible vulnerabilities.\n"
-	systemPrompt += "If you think that the vulnerability is actually exploitable in the context, do NOT add it to the result.\n"
-	systemPrompt += "Only print a valid JSON object.\n"
 
 	schema := &jsonschema.Definition{
 		Type: jsonschema.Object, // openai wants the top-level type to be Object, not Array
@@ -197,7 +198,11 @@ If you find negligible vulnerabilities, print a JSON object that follows the spe
 					Properties: map[string]jsonschema.Definition{
 						"vulnId": {
 							Type:        jsonschema.String,
-							Description: "The **vulnerability ID** of which you think negligible. Must corresponds to the vulnID in the input JSON.",
+							Description: "The **vulnerability ID** that corresponds to the vulnID in the input JSON.",
+						},
+						"exploitable": {
+							Type:        jsonschema.Boolean,
+							Description: "Whether the vulnerability is **exploitable** in the given context.",
 						},
 						"confidence": {
 							Type:        jsonschema.Number,
@@ -205,12 +210,11 @@ If you find negligible vulnerabilities, print a JSON object that follows the spe
 						},
 						"reason": {
 							Type: jsonschema.String,
-							Description: "The **reason** why you think the vulnerability is negligible in this container image. " +
-								"The reason string should be unique, descriptive, and in 2 or 3 sentences. " +
-								"Do not just duplicate the description of the vulnerability here.",
+							Description: "The **reason** why you think the vulnerability is exploitable or negligible in this container image. " +
+								"The reason string should be unique, descriptive, and in 2 or 3 sentences.",
 						},
 					},
-					Required: []string{"vulnId", "confidence", "reason"},
+					Required: []string{"vulnId", "exploitable", "confidence", "reason"},
 				},
 			},
 		},
@@ -264,6 +268,9 @@ If you find negligible vulnerabilities, print a JSON object that follows the spe
 
 	var stmts []vex.Statement
 	for _, v := range l.Result {
+		if v.Exploitable {
+			continue
+		}
 		k := v.VulnID
 		vv, err := json.Marshal(v)
 		if err != nil {
