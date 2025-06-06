@@ -87,7 +87,9 @@ Other properties are duplicated from the original input.
 
 ## Configuration
 ### LLM backends
-VexLLM is tested with OpenAI GPT-4o mini and Anthropic Claude 3.5 Sonnet.
+VexLLM is tested with OpenAI GPT-4o mini and Ollama.
+
+The LLM backend can be specified in the `--llm=(openai|ollama)` flag.
 
 The following env vars are recognized:
 - OpenAI
@@ -101,7 +103,7 @@ The following env vars are recognized:
 - Ollama
   - `OLLAMA_MODEL`, e.g., `qwen3:8b`, `gemma3:4b`
 
-VexLLM may also work with Google AI, and Ollama, but these backends are not tested.
+VexLLM may also work with Anthropic, Google AI, and others, but these backends are not tested.
 See [`pkg/llm/...`](./pkg/llm/).
 
 ## Command reference
