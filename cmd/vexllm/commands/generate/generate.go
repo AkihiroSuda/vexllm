@@ -49,7 +49,7 @@ func New() *cobra.Command {
 	}
 	flags := cmd.Flags()
 	flags.String("llm", llm.Auto, fmt.Sprintf("LLM backend (%v)", llm.Names))
-	flags.Float64("llm-temperature", generator.DefaultTemperature, "Temperature")
+	flags.Float64("llm-temperature", 0.0, "Temperature (0.0 means no explicit temperature)")
 	flags.Int("llm-batch-size", generator.DefaultBatchSize, "Number of vulnerabilities to be processed in a single LLM API call")
 	flags.Int("llm-seed", 0, "Seed (0 means no explicit seed)")
 	flags.String("input-format", "auto", "Input format ([auto trivy])")
