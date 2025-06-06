@@ -17,16 +17,17 @@ import (
 )
 
 const (
-	DefaultTemperature      = 0.0
 	DefaultBatchSize        = 10
 	DefaultSleepOnRateLimit = 10 * time.Second
 	DefaultRetryOnRateLimit = 10
 )
 
 type Opts struct {
-	LLM              llms.Model
-	Temperature      float64
-	BatchSize        int // Decrease to avoid rate limit
+	LLM         llms.Model
+	Temperature float64
+	BatchSize   int // Decrease to avoid rate limit
+	Seed        int
+
 	SleepOnRateLimit time.Duration
 	RetryOnRateLimit int
 
@@ -50,9 +51,6 @@ func New(o Opts) (*Generator, error) {
 	}
 	if g.o.LLM == nil {
 		return nil, errors.New("no model")
-	}
-	if g.o.Temperature == 0.0 {
-		g.o.Temperature = DefaultTemperature
 	}
 	if g.o.BatchSize == 0 {
 		g.o.BatchSize = DefaultBatchSize
@@ -134,9 +132,16 @@ func (g *Generator) generateStatements(ctx context.Context, vulns []Vulnerabilit
 		return err
 	}
 	callOpts := []llms.CallOption{
-		llms.WithTemperature(g.o.Temperature),
 		llms.WithJSONMode(),
 		llms.WithStreamingFunc(streamingFunc),
+	}
+	if g.o.Temperature > 0.0 {
+		slog.Debug("Using temperature", "temperature", g.o.Temperature)
+		callOpts = append(callOpts, llms.WithTemperature(g.o.Temperature))
+	}
+	if g.o.Seed != 0 {
+		slog.Debug("Using seed", "seed", g.o.Seed)
+		callOpts = append(callOpts, llms.WithSeed(g.o.Seed))
 	}
 
 	systemPrompt := `You are a security expert talented for triaging vulnerability reports.
