@@ -51,6 +51,7 @@ func New() *cobra.Command {
 	flags.String("llm", llm.Auto, fmt.Sprintf("LLM backend (%v)", llm.Names))
 	flags.Float64("llm-temperature", generator.DefaultTemperature, "Temperature")
 	flags.Int("llm-batch-size", generator.DefaultBatchSize, "Number of vulnerabilities to be processed in a single LLM API call")
+	flags.Int("llm-seed", 0, "Seed (0 means no explicit seed)")
 	flags.String("input-format", "auto", "Input format ([auto trivy])")
 	flags.String("output-format", "auto", "Output format ([auto trivyignore openvex])")
 	flags.StringArray("hint", nil, "Hint, as an arbitrary text") // StringArray retains comma symbols
@@ -137,6 +138,11 @@ func action(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	o.Seed, err = flags.GetInt("llm-seed")
+	if err != nil {
+		return err
+	}
+
 	o.Hints.Descriptions = []string{
 		fmt.Sprintf("Artifact type: %q", input.ArtifactType),
 		fmt.Sprintf("Artifact name: %q", input.ArtifactName),

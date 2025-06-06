@@ -24,9 +24,11 @@ const (
 )
 
 type Opts struct {
-	LLM              llms.Model
-	Temperature      float64
-	BatchSize        int // Decrease to avoid rate limit
+	LLM         llms.Model
+	Temperature float64
+	BatchSize   int // Decrease to avoid rate limit
+	Seed        int
+
 	SleepOnRateLimit time.Duration
 	RetryOnRateLimit int
 
@@ -137,6 +139,10 @@ func (g *Generator) generateStatements(ctx context.Context, vulns []Vulnerabilit
 		llms.WithTemperature(g.o.Temperature),
 		llms.WithJSONMode(),
 		llms.WithStreamingFunc(streamingFunc),
+	}
+	if g.o.Seed != 0 {
+		slog.Debug("Using seed", "seed", g.o.Seed)
+		callOpts = append(callOpts, llms.WithSeed(g.o.Seed))
 	}
 
 	systemPrompt := `You are a security expert talented for triaging vulnerability reports.
