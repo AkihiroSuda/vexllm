@@ -33,7 +33,9 @@ func New(ctx context.Context, name string) (llms.Model, error) {
 	case llm.Anthropic:
 		return anthropic.New()
 	case llm.GoogleAI:
-		return googleai.New(ctx)
+		var defaultModel string
+		defaultModel = os.Getenv("GOOGLE_MODEL")
+		return googleai.New(ctx, googleai.WithDefaultModel(defaultModel))
 	default:
 		return nil, fmt.Errorf("unknown LLM %q, make sure to use one of %v", name, llm.Names)
 	}

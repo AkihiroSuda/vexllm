@@ -102,6 +102,9 @@ The following env vars are recognized:
   - `ANTHROPIC_API_KEY` (necessary)
 - Ollama
   - `OLLAMA_MODEL`, e.g., `qwen3:8b`, `gemma3:4b`
+- Google AI
+  - `GOOGLE_API_KEY` (necessary)
+  - `GOOGLE_MODEL` (necessary), e.g., `gemini-2.0-flash` (recommanded)
 
 VexLLM may also work with Anthropic, Google AI, and others, but these backends are not tested.
 See [`pkg/llm/...`](./pkg/llm/).

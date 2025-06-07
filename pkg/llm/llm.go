@@ -23,9 +23,11 @@ func IsRateLimit(err error) bool {
 	errS := err.Error()
 	// OpenAI (2024-07-11):
 	// error="API returned unexpected status code: 429: Rate limit reached for gpt-3.5-turbo in organization org-XXXXXXXX on tokens per min (TPM): Limit 60000, Used 40635, Requested 23224. Please try again in 3.858s. Visit https://platform.openai.com/account/rate-limits to learn more."
+	// Google AI (2025-06-08):
+	// error="error in stream mode: googleapi: Error 429:"
 	//
 	// TODO: add more checks (in the langchaingo upstream?)
-	return strings.Contains(errS, "status code: 429")
+	return strings.Contains(errS, "status code: 429") || strings.Contains(errS, "Error 429:")
 }
 
 func IsTooManyTokens(err error) bool {
