@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/openvex/go-vex v0.2.7
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/tmc/langchaingo v0.1.13
 )
 
